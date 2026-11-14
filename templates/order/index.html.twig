@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des commandes{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <h1 class="mb-4">Gestion des commandes</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {% if orders is empty %}
+        <div class="alert alert-info">
+            Aucune commande enregistrée.
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>N°</th>
+                        <th>Table</th>
+                        <th>Date</th>
+                        <th>Articles</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+
+                            <td>
+                                {{ order.tableNumber ?? '-' }}
+                            </td>
+
+                            <td>
+                                {{ order.createdAt|date('d/m/Y H:i') }}
+                            </td>
+
+                            <td>
+                                {% for item in order.items %}
+                                    <div>
+                                        {{ item.dish.name }}
+                                        × {{ item.quantity }}
+                                    </div>
+                                {% endfor %}
+                            </td>
+
+                            <td>
+                                {% if order.status == 'served' %}
+                                    <span class="badge bg-success">Servie</span>
+                                {% elseif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Annulée</span>
+                                {% elseif order.status == 'in_preparation' %}
+                                    <span class="badge bg-warning text-dark">En préparation</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ order.status }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if order.status != 'served' and order.status != 'cancelled' %}
+                                    <form method="post"
+                                          action="{{ path('app_order_serve', {id: order.id}) }}"
+                                          onsubmit="return confirm('Confirmer que cette commande est servie ?');">
+
+                                        <input type="hidden"
+                                               name="_token"
+                                               value="{{ csrf_token('serve-order-' ~ order.id) }}">
+
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Servir
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">Aucune action</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
