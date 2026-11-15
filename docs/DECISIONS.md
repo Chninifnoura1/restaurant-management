@@ -1,37 +1,163 @@
-# Journal des décisions
+# Décisions techniques et métier
 
-## 2026-11-13 — Cadrage initial
-Sujet officiel retenu : « Gestion d'un restaurant : carte, cuisine et stocks ». Le challenge prévoit cinq niveaux cumulatifs et valorise un socle solide, les tests, les décisions justifiées et un historique Git sincère.
+Projet : Restaurant Management – PFE Challenge EMC
 
-### Questions métier du sujet EMC
+Date : 15/11/2026
 
-**1. Le coût d'un plat déjà servi change-t-il si le prix d'achat évolue ?**  
-Non. Chaque mouvement de consommation conserve le coût unitaire appliqué au moment de la sortie ; les achats suivants utilisent leur nouveau prix. Le coût historique d'un plat servi est donc stable. Pour les coûts courants, on calcule le coût de recette avec le coût unitaire courant (ou coût moyen pondéré si cette méthode est implémentée et documentée).
+Ce document présente les principales décisions métier et techniques du projet.
 
-**2. Comment enregistrer les pertes ?**  
-Créer un mouvement de stock de type `LOSS` avec quantité positive représentant l'amplitude de la sortie, motif obligatoire (`EXPIRY`, `BREAKAGE`, `PREPARATION_ERROR`, `OTHER`), commentaire facultatif, auteur et horodatage. La quantité disponible diminue dans la même transaction.
+## 1. Coût des plats
 
-**3. Un menu « entrée + plat + dessert au choix » est-il un plat comme les autres ?**  
-Non. Le menu est un agrégat commercial composé de choix/étapes, tandis que chaque plat garde sa recette et sa consommation matière. Le prix du menu est distinct du prix individuel. Lors de la commande, les choix concrets sont enregistrés afin de calculer et consommer les bonnes recettes. Un menu ne doit pas avoir une recette unique artificielle.
+### Décision
 
-**4. Le stock peut-il devenir négatif ?**  
-Non. Toute sortie verrouille et vérifie le stock dans une transaction ; elle échoue si la quantité est insuffisante. Un ajustement d'inventaire ne peut pas contourner cette règle sans validation explicite et traçabilité.
+Le coût d'un plat déjà vendu ne doit pas être recalculé rétroactivement lorsqu'un prix d'achat change.
 
-**5. Que faire si l'information allergène est absente ou incohérente ?**  
-Afficher « inconnue / à vérifier », conserver la source et la date de récupération, et ne jamais interpréter une absence de données comme une absence d'allergènes. En cas de contradiction, signaler la donnée comme non fiable et demander une vérification humaine.
+### État actuel
 
-### Autres décisions
-- Décrémentation au statut `SERVED`, conformément au cahier des charges. `READY` ne consomme pas encore le stock.
-- Consommation atomique par ligne servie et idempotente ; la clé de la ligne de commande est associée aux mouvements.
-- Une annulation avant service ne consomme pas. Une correction après service crée un mouvement de régularisation, jamais une suppression de l'historique.
-- Unités canoniques : g, ml, pièce. Conversion kg→g et L→ml ; pas de conversion implicite entre masse et volume.
-- Prix de vente snapshotés dans `OrderItem`, prix matière snapshotés dans `StockMovement`.
-- Symfony 7.4 en monolithe modulaire ; pas de microservices pour un seul restaurant et une fenêtre de sept jours.
-- Les comptes de démonstration et secrets ne seront ajoutés qu'avec fixtures et variables locales non versionnées.
+L'entité OrderItem conserve le prix de vente unitaire de la ligne de commande.
 
-## Risques et mesures
-- **Course concurrente sur le stock** : verrouillage pessimiste et test fonctionnel multi-transaction si possible.
-- **Double décrémentation** : contrainte d'unicité/idempotence et transition d'état contrôlée.
-- **Arrondis** : DECIMAL en base et calculs décimaux maîtrisés.
-- **Recettes imbriquées** : détection des cycles de préparations.
-- **Allergènes incomplets** : état explicite inconnu et validation humaine.
+Le suivi historique complet du coût matière reste à développer.
+
+## 2. Gestion des pertes
+
+### Décision
+
+Chaque perte doit être enregistrée avec :
+
+- L'ingrédient concerné.
+- La quantité perdue.
+- Le motif.
+- La date d'enregistrement.
+
+### État actuel
+
+La méthode `StockService::registerLoss()` :
+
+- Vérifie la quantité demandée.
+- Vérifie la disponibilité du stock.
+- Verrouille l'ingrédient.
+- Diminue le stock.
+- Enregistre la perte.
+- Crée un mouvement `OUT_LOSS`.
+
+## 3. Gestion des menus
+
+### Décision
+
+Un menu composé de plusieurs choix doit être distingué d'un plat individuel.
+
+### État actuel
+
+Les entités Dish et Category permettent de gérer les plats et leurs catégories.
+
+L'entité DishIngredient permet d'associer les ingrédients aux plats.
+
+La gestion complète des menus composés reste à développer.
+
+## 4. Gestion du stock
+
+### Décision
+
+Le stock d'un ingrédient ne doit jamais devenir négatif.
+
+### État actuel
+
+Les opérations de service des commandes et d'enregistrement des pertes vérifient la disponibilité du stock.
+
+Les opérations sensibles utilisent des transactions et des verrouillages pessimistes.
+
+## 5. Inventaire physique
+
+### Décision
+
+Le stock physique peut être différent du stock théorique.
+
+L'inventaire permet de :
+
+- Sélectionner un ingrédient.
+- Saisir la quantité réellement comptée.
+- Calculer l'écart.
+- Justifier l'ajustement.
+- Conserver un historique.
+
+### État actuel
+
+La méthode `StockService::adjustInventory()` met à jour le stock physique et enregistre un mouvement `INVENTORY_ADJUSTMENT`.
+
+Les écarts positifs, négatifs et nuls sont couverts par les tests.
+
+## 6. Unités de mesure
+
+### Décision
+
+Les quantités doivent être cohérentes entre les achats, les recettes, les pertes et les stocks.
+
+### État actuel
+
+Les quantités sont enregistrées avec trois décimales et chaque ingrédient possède une unité.
+
+La conversion automatique entre kg, g, litres et millilitres reste à développer.
+
+## 7. Déduction du stock lors du service
+
+### Décision
+
+Le stock est déduit lorsque la commande est effectivement servie.
+
+### État actuel
+
+La méthode `StockService::serveOrder()` :
+
+- Vérifie la commande.
+- Vérifie la disponibilité des ingrédients.
+- Diminue les quantités en stock.
+- Enregistre les mouvements `OUT_ORDER`.
+- Met à jour l'état de la commande.
+
+## 8. Traçabilité des mouvements
+
+Les principaux types de mouvements sont :
+
+| Type | Signification |
+|---|---|
+| IN_PURCHASE | Entrée après achat |
+| OUT_ORDER | Sortie après service |
+| OUT_LOSS | Sortie après perte |
+| INVENTORY_ADJUSTMENT | Ajustement après inventaire |
+
+Chaque mouvement est associé à un ingrédient, une quantité et une date.
+
+## 9. Gestion des allergènes
+
+### Décision
+
+Une information allergène inconnue ne doit jamais être présentée comme une absence d'allergène.
+
+### État actuel
+
+La gestion complète des allergènes reste à développer.
+
+## 10. Architecture technique
+
+Le projet utilise une architecture monolithique Symfony.
+
+Les responsabilités sont séparées entre :
+
+- Controllers.
+- Entities.
+- Repositories.
+- Forms.
+- Services.
+- Templates Twig.
+
+Le service StockService centralise les opérations métier liées aux stocks.
+
+La base de données utilisée est MySQL 8.0 avec Doctrine ORM.
+
+## 11. Configuration et sécurité
+
+Les informations de connexion et les secrets doivent être conservés dans les fichiers d'environnement locaux.
+
+Les secrets réels ne doivent pas être publiés dans le dépôt Git.
+
+La gestion complète des comptes, des rôles et des autorisations reste à compléter ou à vérifier.
