@@ -234,6 +234,118 @@ final class StockServiceTest extends KernelTestCase
         self::assertCount(0, $movements);
     }
 
+    // INVENTAIRE PHYSIQUE
+
+    #[Test]
+    public function it_registers_a_positive_inventory_adjustment(): void
+    {
+        $ingredient = $this->createIngredientForLoss('10.000');
+        $service = new StockService($this->entityManager);
+
+        $service->adjustInventory(
+            $ingredient,
+            '12.500',
+            'Inventaire physique'
+        );
+
+        self::assertSame('12.500', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(1, $movements);
+        self::assertSame('INVENTORY_ADJUSTMENT', $movements[0]->getType());
+        self::assertSame('2.500', $movements[0]->getQuantity());
+    }
+
+    #[Test]
+    public function it_registers_a_negative_inventory_adjustment(): void
+    {
+        $ingredient = $this->createIngredientForLoss('10.000');
+        $service = new StockService($this->entityManager);
+
+        $service->adjustInventory(
+            $ingredient,
+            '7.500',
+            'Inventaire physique'
+        );
+
+        self::assertSame('7.500', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(1, $movements);
+        self::assertSame('INVENTORY_ADJUSTMENT', $movements[0]->getType());
+        self::assertSame('-2.500', $movements[0]->getQuantity());
+    }
+
+    #[Test]
+    public function it_registers_zero_difference_inventory_adjustment(): void
+    {
+        $ingredient = $this->createIngredientForLoss('10.000');
+        $service = new StockService($this->entityManager);
+
+        $service->adjustInventory(
+            $ingredient,
+            '10.000',
+            'Inventaire physique'
+        );
+
+        self::assertSame('10.000', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(1, $movements);
+        self::assertSame('0.000', $movements[0]->getQuantity());
+    }
+
+    #[Test]
+    public function it_rejects_negative_physical_inventory(): void
+    {
+        $ingredient = $this->createIngredientForLoss('10.000');
+        $service = new StockService($this->entityManager);
+
+        try {
+            $service->adjustInventory(
+                $ingredient,
+                '-1.000',
+                'Inventaire physique'
+            );
+
+            self::fail('Negative physical inventory should be rejected.');
+        } catch (RuntimeException $exception) {
+            self::assertNotEmpty($exception->getMessage());
+        }
+
+        self::assertSame('10.000', $ingredient->getStockQuantity());
+    }
+
+    #[Test]
+    public function it_rejects_inventory_adjustment_without_reason(): void
+    {
+        $ingredient = $this->createIngredientForLoss('10.000');
+        $service = new StockService($this->entityManager);
+
+        try {
+            $service->adjustInventory(
+                $ingredient,
+                '12.000',
+                '   '
+            );
+
+            self::fail('An empty inventory reason should be rejected.');
+        } catch (RuntimeException $exception) {
+            self::assertNotEmpty($exception->getMessage());
+        }
+
+        self::assertSame('10.000', $ingredient->getStockQuantity());
+    }
+
     private function createIngredientForLoss(
         string $stockQuantity = '10.000'
     ): Ingredient {

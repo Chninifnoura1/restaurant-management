@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inventaire physique{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Inventaire physique</h1>
+            <p class="text-muted">
+                Consultation des stocks et historique des ajustements.
+            </p>
+        </div>
+
+        <a href="{{ path('app_inventory_count') }}"
+           class="btn btn-primary">
+            Effectuer un inventaire
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Etat actuel des stocks</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Ingredient</th>
+                            <th>Unite</th>
+                            <th>Stock theorique</th>
+                            <th>Seuil d'alerte</th>
+                            <th>Etat</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for ingredient in ingredients %}
+                        <tr>
+                            <td>{{ ingredient.name }}</td>
+                            <td>{{ ingredient.unit }}</td>
+                            <td>{{ ingredient.stockQuantity }}</td>
+                            <td>{{ ingredient.alertThreshold }}</td>
+                            <td>
+                                {% if ingredient.stockQuantity <= ingredient.alertThreshold %}
+                                    <span class="badge bg-danger">
+                                        Stock faible
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        Disponible
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                Aucun ingredient disponible.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Historique des ajustements</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Ingredient</th>
+                            <th>Ecart enregistre</th>
+                            <th>Motif et details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for movement in movements %}
+                        <tr>
+                            <td>
+                                {{ movement.createdAt|date('d/m/Y H:i') }}
+                            </td>
+                            <td>{{ movement.ingredient.name }}</td>
+                            <td>
+                                {% if movement.quantity > 0 %}
+                                    <span class="text-success fw-bold">
+                                        +{{ movement.quantity }}
+                                    </span>
+                                {% elseif movement.quantity < 0 %}
+                                    <span class="text-danger fw-bold">
+                                        {{ movement.quantity }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">
+                                        0.000
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ movement.reason }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                Aucun ajustement enregistre.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ path('app_ingredient_index') }}"
+           class="btn btn-outline-secondary">
+            Retour aux ingredients
+        </a>
+
+        <a href="{{ path('app_loss_index') }}"
+           class="btn btn-outline-secondary">
+            Gestion des pertes
+        </a>
+    </div>
+
+</div>
+{% endblock %}

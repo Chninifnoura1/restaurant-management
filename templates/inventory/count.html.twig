@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Effectuer un inventaire{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Effectuer un inventaire physique</h4>
+                </div>
+
+                <div class="card-body">
+
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    <p class="text-muted">
+                        Selectionnez un ingredient et saisissez la quantite
+                        reellement presente dans le stock.
+                    </p>
+
+                    {{ form_start(form) }}
+
+                        {{ form_row(form.ingredient) }}
+
+                        {{ form_row(form.physicalQuantity) }}
+
+                        {{ form_row(form.reason) }}
+
+                        <div class="alert alert-info">
+                            Le systeme comparera la quantite physique au stock
+                            theorique et enregistrera automatiquement l'ecart.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_inventory_index') }}"
+                               class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+
+                            <button type="submit" class="btn btn-primary">
+                                Enregistrer l'inventaire
+                            </button>
+                        </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
