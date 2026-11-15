@@ -35,7 +35,12 @@ class Dish
     /**
      * @var Collection<int, DishIngredient>
      */
-    #[ORM\OneToMany(targetEntity: DishIngredient::class, mappedBy: 'dish')]
+    #[ORM\OneToMany(
+        targetEntity: DishIngredient::class,
+        mappedBy: 'dish',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $ingredients;
 
     /**

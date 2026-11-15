@@ -1,0 +1,235 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - Restaurant Management{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+
+    {# En-tête #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold">Dashboard</h1>
+            <p class="text-muted mb-0">Vue générale de votre restaurant</p>
+        </div>
+        <span class="badge bg-dark fs-6">Restaurant Management</span>
+    </div>
+
+    {# Statistiques principales #}
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Total des commandes</p>
+                    <h2 class="fw-bold">{{ totalOrders }}</h2>
+                    <small class="text-muted">Toutes les commandes</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Commandes servies</p>
+                    <h2 class="fw-bold text-success">{{ servedOrders }}</h2>
+                    <small class="text-muted">Commandes terminées</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Chiffre d'affaires</p>
+                    <h2 class="fw-bold text-primary">
+                        {{ revenue|number_format(2, ',', ' ') }} DH
+                    </h2>
+                    <small class="text-muted">Commandes servies uniquement</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        {# Plats les plus vendus #}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Plats les plus vendus</h5>
+                </div>
+
+                <div class="card-body">
+                    {% if bestSellers is empty %}
+                        <p class="text-muted mb-0">
+                            Aucune commande servie pour le moment.
+                        </p>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Plat</th>
+                                        <th class="text-end">Quantité vendue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dish in bestSellers %}
+                                        <tr>
+                                            <td>{{ dish.name }}</td>
+                                            <td class="text-end fw-bold">
+                                                {{ dish.quantity }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Alertes de stock #}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Alertes de stock</h5>
+                </div>
+
+                <div class="card-body">
+                    {% if lowStockIngredients is empty %}
+                        <div class="alert alert-success mb-0">
+                            Aucun ingrédient en stock faible.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Ingrédient</th>
+                                        <th>Stock actuel</th>
+                                        <th>Seuil</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ingredient in lowStockIngredients %}
+                                        <tr>
+                                            <td>{{ ingredient.name }}</td>
+                                            <td class="text-danger fw-bold">
+                                                {{ ingredient.stock|number_format(3, ',', ' ') }}
+                                                {{ ingredient.unit }}
+                                            </td>
+                                            <td>
+                                                {{ ingredient.threshold|number_format(3, ',', ' ') }}
+                                                {{ ingredient.unit }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Marges estimées par plat #}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Marge estimée par plat</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="alert alert-info">
+                        <strong>Note :</strong>
+                        Le coût est calculé à partir du coût moyen pondéré
+                        des achats enregistrés. Les unités de la recette
+                        et des achats doivent être identiques.
+                        Si le prix d'achat d'un ingrédient est inconnu,
+                        la marge du plat ne sera pas calculée.
+                        Cette marge est une estimation et non une marge
+                        comptable historique.
+                    </div>
+
+                    {% if dishMargins is empty %}
+                        <p class="text-muted mb-0">
+                            Aucun plat disponible.
+                        </p>
+                    {% else %}
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+
+                                <thead>
+                                    <tr>
+                                        <th>Plat</th>
+                                        <th class="text-end">Prix de vente</th>
+                                        <th class="text-end">Coût ingrédients</th>
+                                        <th class="text-end">Marge estimée</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for dish in dishMargins %}
+                                        <tr>
+                                            <td class="fw-semibold">
+                                                {{ dish.name }}
+                                            </td>
+
+                                            <td class="text-end">
+                                                {{ dish.salePrice|number_format(2, ',', ' ') }} DH
+                                            </td>
+
+                                            <td class="text-end">
+                                                {% if dish.hasCompleteCost %}
+                                                    {{ dish.ingredientCost|number_format(2, ',', ' ') }} DH
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        Non disponible
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+
+                                            <td class="text-end fw-bold">
+                                                {% if dish.hasCompleteCost %}
+                                                    <span class="{{ dish.margin >= 0 ? 'text-success' : 'text-danger' }}">
+                                                        {{ dish.margin|number_format(2, ',', ' ') }} DH
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-warning">
+                                                        Coût manquant
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+
+                                        {% if not dish.hasCompleteCost and dish.missingCosts is not empty %}
+                                            <tr>
+                                                <td colspan="4" class="small text-muted pt-0">
+                                                    Ingrédients sans prix d'achat :
+                                                    {{ dish.missingCosts|join(', ') }}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+
+                                    {% endfor %}
+                                </tbody>
+
+                            </table>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

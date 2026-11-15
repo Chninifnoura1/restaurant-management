@@ -30,7 +30,12 @@ class RestaurantOrder
     /**
      * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'restaurantOrder')]
+    #[ORM\OneToMany(
+        targetEntity: OrderItem::class,
+        mappedBy: 'restaurantOrder',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $items;
 
     #[ORM\Column(nullable: true)]

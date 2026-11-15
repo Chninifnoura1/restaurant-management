@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle commande{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Nouvelle commande</h1>
+        <a href="{{ path('app_order') }}" class="btn btn-secondary">
+            Retour
+        </a>
+    </div>
+
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            {{ form_row(form.tableNumber) }}
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Plats commandés</strong>
+            <button type="button" id="add-item" class="btn btn-primary btn-sm">
+                + Ajouter un plat
+            </button>
+        </div>
+
+        <div class="card-body">
+            <div
+                id="order-items"
+                data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+                data-index="{{ form.items|length }}"
+            >
+                {% for itemForm in form.items %}
+                    <div class="order-item border rounded p-3 mb-3">
+                        {{ form_row(itemForm.dish) }}
+                        {{ form_row(itemForm.quantity) }}
+
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-item">
+                            Supprimer
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {{ form_errors(form.items) }}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">
+            Enregistrer la commande
+        </button>
+
+        <a href="{{ path('app_order') }}" class="btn btn-secondary">
+            Annuler
+        </a>
+    </div>
+
+    {{ form_end(form) }}
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('order-items');
+    const addButton = document.getElementById('add-item');
+
+    function addRemoveButton(row) {
+        const button = row.querySelector('.remove-item');
+
+        if (button) {
+            button.addEventListener('click', function () {
+                row.remove();
+            });
+        }
+    }
+
+    container.querySelectorAll('.order-item').forEach(addRemoveButton);
+
+    addButton.addEventListener('click', function () {
+        const prototype = container.dataset.prototype;
+        const index = Number(container.dataset.index);
+
+        const html = prototype.replace(/__name__/g, index);
+
+        const row = document.createElement('div');
+        row.className = 'order-item border rounded p-3 mb-3';
+        row.innerHTML = html;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-outline-danger btn-sm remove-item';
+        button.textContent = 'Supprimer';
+
+        row.appendChild(button);
+        container.appendChild(row);
+
+        addRemoveButton(row);
+
+        container.dataset.index = String(index + 1);
+    });
+});
+</script>
+{% endblock %}

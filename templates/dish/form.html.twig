@@ -1,0 +1,96 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">{{ title }}</h3>
+        </div>
+
+        <div class="card-body">
+            {{ form_start(form) }}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.name) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.category) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.salePrice) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(form.isAvailable) }}
+                </div>
+                <div class="col-12 mb-3">
+                    {{ form_row(form.description) }}
+                </div>
+            </div>
+
+            <hr>
+            <h5>Recette du plat</h5>
+            <p class="text-muted">
+                Ajoutez les ingrédients et les quantités nécessaires pour préparer une portion.
+            </p>
+
+            <div id="recipe-list"
+                 data-index="{{ form.ingredients|length }}"
+                 data-prototype="{{ form_widget(form.ingredients.vars.prototype)|e('html_attr') }}">
+
+                {% for recipe in form.ingredients %}
+                    <div class="recipe-item border rounded p-3 mb-3">
+                        {{ form_errors(recipe) }}
+                        {{ form_row(recipe.ingredient) }}
+                        {{ form_row(recipe.quantity) }}
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-recipe">
+                            Supprimer cet ingrédient
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-recipe" class="btn btn-outline-primary mb-3">
+                + Ajouter un ingrédient
+            </button>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">Enregistrer</button>
+                <a href="{{ path('app_dish_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const list = document.getElementById('recipe-list');
+    const addButton = document.getElementById('add-recipe');
+
+    function addRecipe() {
+        const index = Number(list.dataset.index);
+        const prototype = list.dataset.prototype.replace(/__name__/g, index);
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'recipe-item border rounded p-3 mb-3';
+        wrapper.innerHTML = prototype +
+            '<button type="button" class="btn btn-outline-danger btn-sm remove-recipe mt-2">Supprimer cet ingrédient</button>';
+
+        list.appendChild(wrapper);
+        list.dataset.index = index + 1;
+    }
+
+    addButton.addEventListener('click', addRecipe);
+
+    list.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-recipe')) {
+            event.target.closest('.recipe-item').remove();
+        }
+    });
+});
+</script>
+{% endblock %}
