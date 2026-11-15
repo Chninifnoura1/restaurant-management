@@ -2,80 +2,372 @@
 
 {% block title %}Gestion des plats{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .dish-page {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .dish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .dish-header h1 {
+            font-size: 27px;
+            font-weight: 750;
+            color: #172033;
+            margin-bottom: 6px;
+        }
+
+        .dish-header p {
+            color: #7b8495;
+            margin: 0;
+        }
+
+        .dish-add-btn {
+            background: #2563eb;
+            border: none;
+            border-radius: 9px;
+            padding: 11px 18px;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dish-add-btn:hover {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .dish-card {
+            background: white;
+            border: 1px solid #e8edf3;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, .04);
+            overflow: hidden;
+        }
+
+        .dish-card-header {
+            padding: 19px 22px;
+            border-bottom: 1px solid #edf0f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dish-card-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+            color: #172033;
+        }
+
+        .dish-table {
+            margin: 0;
+            min-width: 850px;
+        }
+
+        .dish-table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 15px 18px;
+            border-bottom: 1px solid #e8edf3;
+            white-space: nowrap;
+        }
+
+        .dish-table tbody td {
+            padding: 17px 18px;
+            vertical-align: middle;
+            border-color: #f0f2f6;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .dish-table tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .dish-name {
+            font-weight: 700;
+            color: #172033;
+            margin-bottom: 5px;
+        }
+
+        .dish-description {
+            color: #8791a2;
+            font-size: 12px;
+            max-width: 230px;
+        }
+
+        .dish-price {
+            font-weight: 700;
+            color: #172033;
+            white-space: nowrap;
+        }
+
+        .dish-category {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 7px;
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .recipe-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        .recipe-item {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .recipe-empty {
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-available {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-unavailable {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .dish-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+        }
+
+        .dish-action-btn {
+            border-radius: 7px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+        }
+
+        .dish-edit-btn {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .dish-edit-btn:hover {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .dish-delete-btn {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .dish-delete-btn:hover {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .dish-empty {
+            text-align: center;
+            padding: 55px 20px !important;
+            color: #94a3b8 !important;
+        }
+
+        .dish-empty i {
+            display: block;
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .dish-header h1 {
+                font-size: 22px;
+            }
+
+            .dish-header {
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestion des plats</h1>
-        <a href="{{ path('app_dish_new') }}" class="btn btn-primary">
-            + Ajouter un plat
+<div class="container-fluid py-3 dish-page">
+
+    <div class="dish-header">
+        <div>
+            <h1>Gestion des plats</h1>
+            <p>Consultez et gérez les plats, leurs recettes et leur disponibilité.</p>
+        </div>
+
+        <a href="{{ path('app_dish_new') }}" class="dish-add-btn">
+            <i class="bi bi-plus-lg"></i>
+            Ajouter un plat
         </a>
     </div>
 
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success">{{ message }}</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     {% endfor %}
 
     {% for message in app.flashes('danger') %}
-        <div class="alert alert-danger">{{ message }}</div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     {% endfor %}
 
-    <div class="card shadow-sm">
-        <div class="card-body table-responsive">
-            <table class="table table-striped align-middle">
-                <thead class="table-dark">
+    <div class="dish-card">
+
+        <div class="dish-card-header">
+            <h2><i class="bi bi-egg-fried me-2 text-primary"></i>Liste des plats</h2>
+            <span class="text-muted small">Catalogue des plats</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table dish-table">
+                <thead>
                     <tr>
                         <th>Plat</th>
                         <th>Catégorie</th>
-                        <th>Prix (DH)</th>
-                        <th>Ingrédients</th>
+                        <th>Prix de vente</th>
+                        <th>Composition / Recette</th>
                         <th>Disponibilité</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
+
                 <tbody>
                 {% for dish in dishes %}
                     <tr>
                         <td>
-                            <strong>{{ dish.name }}</strong>
-                            <div class="text-muted small">{{ dish.description }}</div>
+                            <div class="dish-name">{{ dish.name }}</div>
+                            <div class="dish-description">
+                                {{ dish.description|default('Aucune description') }}
+                            </div>
                         </td>
-                        <td>{{ dish.category.name }}</td>
-                        <td>{{ dish.salePrice }}</td>
+
                         <td>
-                            {% for recipe in dish.ingredients %}
-                                <div>
-                                    {{ recipe.ingredient.name }}
-                                    : {{ recipe.quantity }} {{ recipe.ingredient.unit }}
-                                </div>
+                            {% if dish.category %}
+                                <span class="dish-category">
+                                    {{ dish.category.name }}
+                                </span>
                             {% else %}
-                                <span class="text-danger">Aucune recette</span>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            {% if dish.isAvailable %}
-                                <span class="badge bg-success">Disponible</span>
-                            {% else %}
-                                <span class="badge bg-danger">Indisponible</span>
+                                <span class="text-muted small">Non classé</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <a href="{{ path('app_dish_edit', {id: dish.id}) }}"
-                               class="btn btn-warning btn-sm">Modifier</a>
 
-                            <form method="post"
-                                  action="{{ path('app_dish_delete', {id: dish.id}) }}"
-                                  class="d-inline"
-                                  onsubmit="return confirm('Supprimer ce plat ?');">
-                                <input type="hidden" name="_token"
-                                       value="{{ csrf_token('delete-dish-' ~ dish.id) }}">
-                                <button class="btn btn-danger btn-sm">Supprimer</button>
-                            </form>
+                        <td>
+                            <span class="dish-price">
+                                {{ dish.salePrice|number_format(2, ',', ' ') }} DH
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="recipe-list">
+                                {% for recipe in dish.ingredients %}
+                                    <div class="recipe-item">
+                                        <i class="bi bi-check2 text-success me-1"></i>
+                                        {{ recipe.ingredient.name }}
+                                        <strong>
+                                            {{ recipe.quantity }}
+                                            {{ recipe.ingredient.unit }}
+                                        </strong>
+                                    </div>
+                                {% else %}
+                                    <span class="recipe-empty">
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                        Aucune recette
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if dish.isAvailable %}
+                                <span class="status-badge status-available">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Disponible
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-unavailable">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Indisponible
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="dish-actions">
+                                <a href="{{ path('app_dish_edit', {id: dish.id}) }}"
+                                   class="dish-action-btn dish-edit-btn">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    Modifier
+                                </a>
+
+                                <form method="post"
+                                      action="{{ path('app_dish_delete', {id: dish.id}) }}"
+                                      onsubmit="return confirm('Voulez-vous vraiment supprimer ce plat ?');">
+
+                                    <input type="hidden"
+                                           name="_token"
+                                           value="{{ csrf_token('delete-dish-' ~ dish.id) }}">
+
+                                    <button type="submit"
+                                            class="dish-action-btn dish-delete-btn">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6" class="text-center">
-                            Aucun plat enregistré.
+                        <td colspan="6" class="dish-empty">
+                            <i class="bi bi-egg-fried"></i>
+                            <strong class="d-block text-secondary">Aucun plat enregistré</strong>
+                            <span class="small">Commencez par ajouter votre premier plat.</span>
                         </td>
                     </tr>
                 {% endfor %}

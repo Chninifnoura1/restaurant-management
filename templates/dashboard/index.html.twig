@@ -1,235 +1,540 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard - Restaurant Management{% endblock %}
+{% block title %}Dashboard | RestaurantPro{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 28px;
+    }
+
+    .dashboard-title {
+        font-size: 26px;
+        font-weight: 750;
+        margin-bottom: 5px;
+        letter-spacing: -.5px;
+    }
+
+    .dashboard-subtitle {
+        color: #8492a6;
+        margin: 0;
+        font-size: 13px;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        padding: 22px;
+        min-height: 155px;
+    }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .stat-label {
+        color: #8492a6;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .stat-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .icon-blue {
+        background: #eaf1ff;
+        color: #4675d5;
+    }
+
+    .icon-green {
+        background: #e5f6ef;
+        color: #19976b;
+    }
+
+    .icon-orange {
+        background: #fff1e4;
+        color: #e58a36;
+    }
+
+    .stat-value {
+        font-size: 29px;
+        font-weight: 750;
+        letter-spacing: -.7px;
+        margin-bottom: 5px;
+        color: #243447;
+    }
+
+    .stat-description {
+        font-size: 11px;
+        color: #9aa6b5;
+    }
+
+    .section-card {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .section-heading h5 {
+        font-size: 15px;
+        margin: 0;
+    }
+
+    .section-icon {
+        color: #0f766e;
+        margin-right: 8px;
+        font-size: 17px;
+    }
+
+    .section-tag {
+        font-size: 10px;
+        padding: 6px 9px;
+        border-radius: 20px;
+        background: #e6f4f1;
+        color: #0f766e;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 15px;
+        color: #8492a6;
+    }
+
+    .empty-state i {
+        display: block;
+        font-size: 30px;
+        margin-bottom: 10px;
+        color: #a8b6c4;
+    }
+
+    .dish-name {
+        font-weight: 650;
+        color: #34465a;
+    }
+
+    .dish-rank {
+        display: inline-flex;
+        width: 27px;
+        height: 27px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #edf4f3;
+        color: #0f766e;
+        font-weight: 700;
+        font-size: 11px;
+        margin-right: 9px;
+    }
+
+    .stock-warning {
+        background: #fff7ed;
+        color: #c66a1a;
+        padding: 6px 9px;
+        border-radius: 7px;
+        font-weight: 700;
+        font-size: 11px;
+    }
+
+    .stock-ok {
+        background: #e7f6ee;
+        color: #198754;
+        padding: 6px 9px;
+        border-radius: 7px;
+        font-weight: 700;
+        font-size: 11px;
+    }
+
+    .margin-positive {
+        color: #15966b;
+        font-weight: 750;
+    }
+
+    .margin-negative {
+        color: #dc3545;
+        font-weight: 750;
+    }
+
+    .margin-missing {
+        color: #c47a21;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .info-note {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #eef6ff;
+        color: #45627e;
+        border-radius: 9px;
+        font-size: 12px;
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .info-note i {
+        font-size: 18px;
+        color: #4385c5;
+    }
+
+    .dashboard-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-actions .btn {
+        font-size: 12px;
+    }
+
+    @media (max-width: 576px) {
+        .dashboard-title {
+            font-size: 22px;
+        }
+
+        .stat-value {
+            font-size: 25px;
+        }
+
+        .stat-card {
+            min-height: 140px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
 
-    {# En-tête #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h2 fw-bold">Dashboard</h1>
-            <p class="text-muted mb-0">Vue générale de votre restaurant</p>
-        </div>
-        <span class="badge bg-dark fs-6">Restaurant Management</span>
+<div class="dashboard-header">
+    <div>
+        <h1 class="dashboard-title">Tableau de bord</h1>
+        <p class="dashboard-subtitle">
+            Bienvenue dans votre espace de gestion. Voici la situation de votre restaurant.
+        </p>
     </div>
 
-    {# Statistiques principales #}
-    <div class="row g-3 mb-4">
+    <div class="dashboard-actions">
+        <a href="{{ path('app_order_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Nouvelle commande
+        </a>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-2">Total des commandes</p>
-                    <h2 class="fw-bold">{{ totalOrders }}</h2>
-                    <small class="text-muted">Toutes les commandes</small>
+        <a href="{{ path('app_dish_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-egg-fried me-1"></i> Voir les plats
+        </a>
+    </div>
+</div>
+
+{# Statistiques principales #}
+<div class="row g-3 mb-4">
+
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="card stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Total des commandes</span>
+                <div class="stat-icon icon-blue">
+                    <i class="bi bi-receipt"></i>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-2">Commandes servies</p>
-                    <h2 class="fw-bold text-success">{{ servedOrders }}</h2>
-                    <small class="text-muted">Commandes terminées</small>
-                </div>
+            <div class="stat-value">{{ totalOrders }}</div>
+            <div class="stat-description">
+                Toutes les commandes enregistrées
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <p class="text-muted mb-2">Chiffre d'affaires</p>
-                    <h2 class="fw-bold text-primary">
-                        {{ revenue|number_format(2, ',', ' ') }} DH
-                    </h2>
-                    <small class="text-muted">Commandes servies uniquement</small>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <div class="row g-4">
-
-        {# Plats les plus vendus #}
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Plats les plus vendus</h5>
-                </div>
-
-                <div class="card-body">
-                    {% if bestSellers is empty %}
-                        <p class="text-muted mb-0">
-                            Aucune commande servie pour le moment.
-                        </p>
-                    {% else %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Plat</th>
-                                        <th class="text-end">Quantité vendue</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for dish in bestSellers %}
-                                        <tr>
-                                            <td>{{ dish.name }}</td>
-                                            <td class="text-end fw-bold">
-                                                {{ dish.quantity }}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% endif %}
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="card stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Commandes servies</span>
+                <div class="stat-icon icon-green">
+                    <i class="bi bi-check-circle"></i>
                 </div>
             </div>
-        </div>
 
-        {# Alertes de stock #}
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Alertes de stock</h5>
-                </div>
-
-                <div class="card-body">
-                    {% if lowStockIngredients is empty %}
-                        <div class="alert alert-success mb-0">
-                            Aucun ingrédient en stock faible.
-                        </div>
-                    {% else %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Ingrédient</th>
-                                        <th>Stock actuel</th>
-                                        <th>Seuil</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for ingredient in lowStockIngredients %}
-                                        <tr>
-                                            <td>{{ ingredient.name }}</td>
-                                            <td class="text-danger fw-bold">
-                                                {{ ingredient.stock|number_format(3, ',', ' ') }}
-                                                {{ ingredient.unit }}
-                                            </td>
-                                            <td>
-                                                {{ ingredient.threshold|number_format(3, ',', ' ') }}
-                                                {{ ingredient.unit }}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% endif %}
-                </div>
+            <div class="stat-value">{{ servedOrders }}</div>
+            <div class="stat-description">
+                Commandes terminées et servies
             </div>
         </div>
+    </div>
 
-        {# Marges estimées par plat #}
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Marge estimée par plat</h5>
-                </div>
-
-                <div class="card-body">
-
-                    <div class="alert alert-info">
-                        <strong>Note :</strong>
-                        Le coût est calculé à partir du coût moyen pondéré
-                        des achats enregistrés. Les unités de la recette
-                        et des achats doivent être identiques.
-                        Si le prix d'achat d'un ingrédient est inconnu,
-                        la marge du plat ne sera pas calculée.
-                        Cette marge est une estimation et non une marge
-                        comptable historique.
-                    </div>
-
-                    {% if dishMargins is empty %}
-                        <p class="text-muted mb-0">
-                            Aucun plat disponible.
-                        </p>
-                    {% else %}
-
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-
-                                <thead>
-                                    <tr>
-                                        <th>Plat</th>
-                                        <th class="text-end">Prix de vente</th>
-                                        <th class="text-end">Coût ingrédients</th>
-                                        <th class="text-end">Marge estimée</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {% for dish in dishMargins %}
-                                        <tr>
-                                            <td class="fw-semibold">
-                                                {{ dish.name }}
-                                            </td>
-
-                                            <td class="text-end">
-                                                {{ dish.salePrice|number_format(2, ',', ' ') }} DH
-                                            </td>
-
-                                            <td class="text-end">
-                                                {% if dish.hasCompleteCost %}
-                                                    {{ dish.ingredientCost|number_format(2, ',', ' ') }} DH
-                                                {% else %}
-                                                    <span class="text-muted">
-                                                        Non disponible
-                                                    </span>
-                                                {% endif %}
-                                            </td>
-
-                                            <td class="text-end fw-bold">
-                                                {% if dish.hasCompleteCost %}
-                                                    <span class="{{ dish.margin >= 0 ? 'text-success' : 'text-danger' }}">
-                                                        {{ dish.margin|number_format(2, ',', ' ') }} DH
-                                                    </span>
-                                                {% else %}
-                                                    <span class="text-warning">
-                                                        Coût manquant
-                                                    </span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-
-                                        {% if not dish.hasCompleteCost and dish.missingCosts is not empty %}
-                                            <tr>
-                                                <td colspan="4" class="small text-muted pt-0">
-                                                    Ingrédients sans prix d'achat :
-                                                    {{ dish.missingCosts|join(', ') }}
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-
-                                    {% endfor %}
-                                </tbody>
-
-                            </table>
-                        </div>
-
-                    {% endif %}
-
+    <div class="col-12 col-md-12 col-xl-4">
+        <div class="card stat-card">
+            <div class="stat-top">
+                <span class="stat-label">Chiffre d'affaires</span>
+                <div class="stat-icon icon-orange">
+                    <i class="bi bi-currency-exchange"></i>
                 </div>
             </div>
-        </div>
 
+            <div class="stat-value">
+                {{ revenue|number_format(2, ',', ' ') }}
+                <span style="font-size:15px">DH</span>
+            </div>
+            <div class="stat-description">
+                Calculé uniquement sur les commandes servies
+            </div>
+        </div>
     </div>
 
 </div>
+
+<div class="row g-4 mb-4">
+
+    {# Plats les plus vendus #}
+    <div class="col-12 col-xl-6">
+        <div class="card section-card">
+
+            <div class="card-header">
+                <div class="section-heading">
+                    <h5>
+                        <i class="bi bi-trophy section-icon"></i>
+                        Plats les plus vendus
+                    </h5>
+                    <span class="section-tag">TOP 5</span>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+
+                {% if bestSellers is empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-clipboard-data"></i>
+                        Aucune commande servie pour le moment.
+                    </div>
+                {% else %}
+
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Classement / Plat</th>
+                                    <th class="text-end">Quantité vendue</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for dish in bestSellers %}
+                                    <tr>
+                                        <td>
+                                            <span class="dish-rank">{{ loop.index }}</span>
+                                            <span class="dish-name">{{ dish.name }}</span>
+                                        </td>
+
+                                        <td class="text-end fw-bold">
+                                            {{ dish.quantity }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    {# Alertes de stock #}
+    <div class="col-12 col-xl-6">
+        <div class="card section-card">
+
+            <div class="card-header">
+                <div class="section-heading">
+                    <h5>
+                        <i class="bi bi-exclamation-triangle section-icon"></i>
+                        Surveillance du stock
+                    </h5>
+
+                    {% if lowStockIngredients is empty %}
+                        <span class="stock-ok">Stock normal</span>
+                    {% else %}
+                        <span class="stock-warning">
+                            {{ lowStockIngredients|length }} alerte(s)
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+
+                {% if lowStockIngredients is empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-shield-check"></i>
+                        Aucun ingrédient en stock faible.
+                        <div class="small mt-1">
+                            Tous les stocks respectent leurs seuils d'alerte.
+                        </div>
+                    </div>
+                {% else %}
+
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ingrédient</th>
+                                    <th>Stock actuel</th>
+                                    <th>Seuil</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for ingredient in lowStockIngredients %}
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            {{ ingredient.name }}
+                                        </td>
+
+                                        <td class="text-danger fw-bold">
+                                            {{ ingredient.stock|number_format(3, ',', ' ') }}
+                                            {{ ingredient.unit }}
+                                        </td>
+
+                                        <td>
+                                            {{ ingredient.threshold|number_format(3, ',', ' ') }}
+                                            {{ ingredient.unit }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# Marges estimées #}
+<div class="card section-card">
+
+    <div class="card-header">
+        <div class="section-heading">
+            <h5>
+                <i class="bi bi-graph-up-arrow section-icon"></i>
+                Analyse des marges par plat
+            </h5>
+            <span class="section-tag">ANALYSE FINANCIÈRE</span>
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        <div class="info-note">
+            <i class="bi bi-info-circle"></i>
+
+            <div>
+                <strong>À propos du calcul des marges :</strong>
+                Le coût des ingrédients est calculé à partir du coût moyen pondéré
+                des achats enregistrés. Les unités des recettes et des achats
+                doivent être identiques. Si un prix d'achat manque, la marge
+                n'est pas calculée. Il s'agit d'une estimation et non d'une
+                marge comptable historique.
+            </div>
+        </div>
+
+        {% if dishMargins is empty %}
+
+            <div class="empty-state">
+                <i class="bi bi-calculator"></i>
+                Aucun plat disponible pour calculer les marges.
+            </div>
+
+        {% else %}
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Plat</th>
+                            <th class="text-end">Prix de vente</th>
+                            <th class="text-end">Coût ingrédients</th>
+                            <th class="text-end">Marge estimée</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for dish in dishMargins %}
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    {{ dish.name }}
+                                </td>
+
+                                <td class="text-end">
+                                    {{ dish.salePrice|number_format(2, ',', ' ') }} DH
+                                </td>
+
+                                <td class="text-end">
+                                    {% if dish.hasCompleteCost %}
+                                        {{ dish.ingredientCost|number_format(2, ',', ' ') }} DH
+                                    {% else %}
+                                        <span class="text-muted">Non disponible</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">
+                                    {% if dish.hasCompleteCost %}
+                                        <span class="{{ dish.margin >= 0 ? 'margin-positive' : 'margin-negative' }}">
+                                            {{ dish.margin|number_format(2, ',', ' ') }} DH
+                                        </span>
+                                    {% else %}
+                                        <span class="margin-missing">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Coût manquant
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            {% if not dish.hasCompleteCost and dish.missingCosts is not empty %}
+                                <tr>
+                                    <td colspan="4" class="small text-muted pt-0">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Prix d'achat manquant pour :
+                                        {{ dish.missingCosts|join(', ') }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
 {% endblock %}
