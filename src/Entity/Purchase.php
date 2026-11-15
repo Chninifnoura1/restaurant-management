@@ -31,7 +31,12 @@ class Purchase
     /**
      * @var Collection<int, PurchaseItem>
      */
-    #[ORM\OneToMany(targetEntity: PurchaseItem::class, mappedBy: 'purchase')]
+    #[ORM\OneToMany(
+        targetEntity: PurchaseItem::class,
+        mappedBy: 'purchase',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
     private Collection $purchaseItems;
 
     public function __construct()
@@ -54,6 +59,7 @@ class Purchase
     public function setSupplierName(string $supplierName): static
     {
         $this->supplierName = $supplierName;
+
         return $this;
     }
 
@@ -65,6 +71,7 @@ class Purchase
     public function setPurchaseDate(\DateTimeImmutable $purchaseDate): static
     {
         $this->purchaseDate = $purchaseDate;
+
         return $this;
     }
 
@@ -76,6 +83,7 @@ class Purchase
     public function setReference(?string $reference): static
     {
         $this->reference = $reference;
+
         return $this;
     }
 
@@ -87,9 +95,13 @@ class Purchase
     public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
+
         return $this;
     }
 
+    /**
+     * @return Collection<int, PurchaseItem>
+     */
     public function getPurchaseItems(): Collection
     {
         return $this->purchaseItems;
@@ -100,6 +112,17 @@ class Purchase
         if (!$this->purchaseItems->contains($purchaseItem)) {
             $this->purchaseItems->add($purchaseItem);
             $purchaseItem->setPurchase($this);
+        }
+
+        return $this;
+    }
+
+    public function removePurchaseItem(PurchaseItem $purchaseItem): static
+    {
+        if ($this->purchaseItems->removeElement($purchaseItem)) {
+            if ($purchaseItem->getPurchase() === $this) {
+                $purchaseItem->setPurchase(null);
+            }
         }
 
         return $this;

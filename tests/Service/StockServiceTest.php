@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\Dish;
 use App\Entity\DishIngredient;
 use App\Entity\Ingredient;
+use App\Entity\Loss;
 use App\Entity\OrderItem;
 use App\Entity\RestaurantOrder;
 use App\Entity\StockMovement;
@@ -150,6 +151,102 @@ final class StockServiceTest extends KernelTestCase
             ->findBy(['ingredient' => $ingredient]);
 
         self::assertCount(0, $movements);
+    }
+
+    #[Test]
+    public function it_registers_a_loss_and_deducts_stock(): void
+    {
+        $ingredient = $this->createIngredientForLoss();
+
+        $loss = new Loss();
+        $loss->setIngredient($ingredient);
+        $loss->setQuantity('2.500');
+        $loss->setReason('Produit périmé');
+
+        $service = new StockService($this->entityManager);
+
+        $service->registerLoss($loss);
+
+        self::assertSame('7.500', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(1, $movements);
+        self::assertSame('OUT_LOSS', $movements[0]->getType());
+        self::assertSame('2.500', $movements[0]->getQuantity());
+    }
+
+    #[Test]
+    public function it_rejects_a_loss_greater_than_available_stock(): void
+    {
+        $ingredient = $this->createIngredientForLoss('1.000');
+
+        $loss = new Loss();
+        $loss->setIngredient($ingredient);
+        $loss->setQuantity('2.000');
+        $loss->setReason('Test stock insuffisant');
+
+        $service = new StockService($this->entityManager);
+
+        try {
+            $service->registerLoss($loss);
+            self::fail('A loss greater than available stock should be rejected.');
+        } catch (RuntimeException $exception) {
+            self::assertNotEmpty($exception->getMessage());
+        }
+
+        self::assertSame('1.000', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(0, $movements);
+    }
+
+    #[Test]
+    public function it_rejects_a_loss_with_zero_quantity(): void
+    {
+        $ingredient = $this->createIngredientForLoss();
+
+        $loss = new Loss();
+        $loss->setIngredient($ingredient);
+        $loss->setQuantity('0.000');
+        $loss->setReason('Test quantité zéro');
+
+        $service = new StockService($this->entityManager);
+
+        try {
+            $service->registerLoss($loss);
+            self::fail('A zero quantity loss should be rejected.');
+        } catch (RuntimeException $exception) {
+            self::assertNotEmpty($exception->getMessage());
+        }
+
+        self::assertSame('10.000', $ingredient->getStockQuantity());
+
+        $movements = $this->entityManager
+            ->getRepository(StockMovement::class)
+            ->findBy(['ingredient' => $ingredient]);
+
+        self::assertCount(0, $movements);
+    }
+
+    private function createIngredientForLoss(
+        string $stockQuantity = '10.000'
+    ): Ingredient {
+        $ingredient = new Ingredient();
+        $ingredient->setName('Test Loss Ingredient');
+        $ingredient->setUnit('kg');
+        $ingredient->setStockQuantity($stockQuantity);
+        $ingredient->setAlertThreshold('1.000');
+
+        $this->entityManager->persist($ingredient);
+        $this->entityManager->flush();
+
+        return $ingredient;
     }
 
     /**

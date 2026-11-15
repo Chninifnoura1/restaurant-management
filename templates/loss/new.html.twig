@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrer une perte{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Enregistrer une perte de stock</h4>
+                </div>
+
+                <div class="card-body">
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {{ form_start(form) }}
+
+                    <div class="mb-3">
+                        {{ form_row(form.ingredient, {
+                            attr: { class: 'form-select' }
+                        }) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.quantity, {
+                            attr: { class: 'form-control' }
+                        }) }}
+                        <small class="text-muted">
+                            Saisir une quantité strictement positive.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.reason, {
+                            attr: { class: 'form-control' }
+                        }) }}
+                    </div>
+
+                    <div class="alert alert-warning">
+                        Attention : l'enregistrement de cette perte diminue
+                        automatiquement le stock de l'ingrédient sélectionné.
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">
+                        Enregistrer la perte
+                    </button>
+
+                    <a href="{{ path('app_loss_index') }}"
+                       class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
